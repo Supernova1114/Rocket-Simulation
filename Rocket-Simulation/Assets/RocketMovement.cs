@@ -1,24 +1,31 @@
+using MichaelWolfGames;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+
 public class RocketMovement : MonoBehaviour
 {
-    [SerializeField] private GameObject imu_obj;
-    [SerializeField] private GameObject engine_rotator;
+    [SerializeField] private GameObject imuObj;
+    [SerializeField] private GameObject engineGimbal;
     [SerializeField] private GameObject engine;
-    [SerializeField] private float engine_force;
-    [SerializeField] private float adjustmentFactor;
+
+    [SerializeField] private float thrustForce;
     [SerializeField] private Transform target;
 
-    private Rigidbody r_body;
-    private bool enable_engine = true;
+    [SerializeField] private PIDController pid_controller;
 
-    // Start is called before the first frame update
+    private Rigidbody r_body;
+    private bool enable_engine = false;
+    
     void Start()
     {
+
         r_body = GetComponent<Rigidbody>();
         r_body.sleepThreshold = 0.001f;
+
+        this.StartTimer(3, () => { enable_engine = true; engine.SetActive(true); });
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -34,13 +41,25 @@ public class RocketMovement : MonoBehaviour
     {   
         if (enable_engine)
         {
-            Quaternion rotation_towards_target = Quaternion.LookRotation(target.position - imu_obj.transform.position);
-            rotation_towards_target = Quaternion.LookRotation(Vector3.up);
+            Vector3 targetDir = (target.position - imuObj.transform.position).normalized;
+            targetDir = Vector3.up; // Temp
 
-            engine_rotator.transform.rotation = Quaternion.AngleAxis(180, transform.up) * rotation_towards_target;
+            Vector3 currentDir = imuObj.transform.up;
+
+            float angleDelta = Vector3.Angle(targetDir, currentDir);
+
+            float pid_result = pid_controller.UpdateAngle(Time.fixedDeltaTime, angleDelta, 0);
+
+            Vector3 rotationAxis = Vector3.Cross(targetDir, currentDir);
+
+            Quaternion rotation_towards_target = Quaternion.LookRotation(targetDir);
+
+            Quaternion engine_gimal_rot_soln = Quaternion.AngleAxis(pid_result, rotationAxis);
+
+            engineGimbal.transform.rotation = Quaternion.AngleAxis(180, transform.up) * engine_gimal_rot_soln * rotation_towards_target;
 
             // Engine force
-            r_body.AddForceAtPosition(engine.transform.up * engine_force, engine.transform.position);
+            r_body.AddForceAtPosition(engine.transform.up * thrustForce, engine.transform.position);
             Debug.DrawRay(engine.transform.position, engine.transform.up * -1 * 2, Color.red);
         }
     }
