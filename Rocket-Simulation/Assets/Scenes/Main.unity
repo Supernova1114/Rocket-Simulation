@@ -978,7 +978,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &641746591
 Transform:
   m_ObjectHideFlags: 0
@@ -1011,7 +1011,7 @@ SphereCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Radius: 0.5
   m_Center: {x: 0, y: 0, z: 0}
@@ -1171,7 +1171,7 @@ GameObject:
   - component: {fileID: 748430090}
   - component: {fileID: 748430089}
   m_Layer: 0
-  m_Name: EngineGimbal
+  m_Name: GimbalMesh
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1235,13 +1235,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 748430087}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -2.43, z: 0}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: -0}
   m_LocalScale: {x: 0.8, y: 0.8, z: 0.8}
   m_ConstrainProportionsScale: 1
-  m_Children:
-  - {fileID: 947286852}
-  m_Father: {fileID: 1066308946}
+  m_Children: []
+  m_Father: {fileID: 1137063800}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &812560079
 GameObject:
@@ -1479,7 +1478,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 947286848}
-  m_Enabled: 0
+  m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -1530,14 +1529,46 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 947286848}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 0, z: -1.0462}
-  m_LocalScale: {x: 0.25, y: 0.6342285, z: 0.25}
+  m_LocalRotation: {x: 0.7071068, y: -0, z: -0, w: 0.7071068}
+  m_LocalPosition: {x: 0, y: 0, z: -0.83695984}
+  m_LocalScale: {x: 0.2, y: 0.5073828, z: 0.20000002}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1778462102}
-  m_Father: {fileID: 748430091}
+  m_Father: {fileID: 1137063800}
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
+--- !u!1 &950808134
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 950808135}
+  m_Layer: 0
+  m_Name: GimbalYaw
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &950808135
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 950808134}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1137063800}
+  m_Father: {fileID: 1305259538}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0
@@ -1625,7 +1656,7 @@ Transform:
   m_GameObject: {fileID: 963194225}
   serializedVersion: 2
   m_LocalRotation: {x: 0.2701736, y: 0.4657982, z: -0.15183333, w: 0.8288456}
-  m_LocalPosition: {x: -11.622835, y: 65.41005, z: 13.803337}
+  m_LocalPosition: {x: -18.930185, y: 63.100216, z: 18.314152}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1691,18 +1722,18 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1066308945}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.4578418, y: -0.03766793, z: -0.3922965, w: 0.79691}
-  m_LocalPosition: {x: -3.15, y: 58.17, z: 18.96}
+  m_LocalRotation: {x: 0.839717, y: 0.32713875, z: -0.15733576, w: 0.40385774}
+  m_LocalPosition: {x: -10.35, y: 58.17, z: 21.31}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 272711136}
   - {fileID: 1609975359}
   - {fileID: 174032977}
-  - {fileID: 748430091}
+  - {fileID: 1305259538}
   - {fileID: 409407170}
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: -49.4, y: 27.37, z: -65.2}
+  m_LocalEulerAnglesHint: {x: 128.63, y: 0, z: -42.57}
 --- !u!54 &1066308947
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1743,16 +1774,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   imuObj: {fileID: 1609975358}
-  engineGimbal: {fileID: 748430087}
+  engineGimbalPitch: {fileID: 1137063799}
+  engineGimbalYaw: {fileID: 950808134}
   engine: {fileID: 947286848}
-  thrustForce: 44.4
+  engineStartDelay: 2
+  thrustForce: 40
   target: {fileID: 1957079605}
-  pid_controller:
-    proportionalGain: 1
+  pid_controller_pitch:
+    proportionalGain: 0.1
     integralGain: 0.01
-    derivativeGain: 0.52
-    outputMin: -180
-    outputMax: 180
+    derivativeGain: 0.04
+    outputMin: -1
+    outputMax: 1
     integralSaturation: 0
     derivativeMeasurement: 0
     valueLast: 0
@@ -1760,6 +1793,39 @@ MonoBehaviour:
     integrationStored: 0
     velocity: 0
     derivativeInitialized: 0
+--- !u!1 &1137063799
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1137063800}
+  m_Layer: 0
+  m_Name: GimbalPitch
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1137063800
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1137063799}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 748430091}
+  - {fileID: 947286852}
+  m_Father: {fileID: 950808135}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1181899355
 GameObject:
   m_ObjectHideFlags: 0
@@ -1825,7 +1891,7 @@ Transform:
   m_GameObject: {fileID: 1181899355}
   serializedVersion: 2
   m_LocalRotation: {x: 0.2701736, y: 0.4657982, z: -0.15183333, w: 0.8288456}
-  m_LocalPosition: {x: -11.622835, y: 65.41005, z: 13.803337}
+  m_LocalPosition: {x: -18.930185, y: 63.100216, z: 18.314152}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2036,6 +2102,38 @@ Transform:
   - {fileID: 1882692780}
   m_Father: {fileID: 409407170}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1305259537
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1305259538}
+  m_Layer: 0
+  m_Name: GimbalParent
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1305259538
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1305259537}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.7071068, y: 0, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: 0, y: -2.43, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 950808135}
+  m_Father: {fileID: 1066308946}
+  m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
 --- !u!1 &1373945766
 GameObject:
   m_ObjectHideFlags: 0
@@ -7962,7 +8060,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!135 &1957079602
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -7980,7 +8078,7 @@ SphereCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Radius: 0.5
   m_Center: {x: 0, y: 0, z: 0}
@@ -8043,7 +8141,7 @@ Transform:
   m_GameObject: {fileID: 1957079601}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.07, y: 66.21, z: 7.74}
+  m_LocalPosition: {x: 0, y: 62.17, z: 20}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:

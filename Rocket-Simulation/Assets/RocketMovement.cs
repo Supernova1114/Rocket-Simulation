@@ -8,24 +8,28 @@ using UnityEngine;
 public class RocketMovement : MonoBehaviour
 {
     [SerializeField] private GameObject imuObj;
-    [SerializeField] private GameObject engineGimbal;
+
+    [SerializeField] private GameObject engineGimbalPitch;
+    [SerializeField] private GameObject engineGimbalYaw;
+
     [SerializeField] private GameObject engine;
 
+    [SerializeField] private float engineStartDelay;
     [SerializeField] private float thrustForce;
     [SerializeField] private Transform target;
 
-    [SerializeField] private PIDController pid_controller;
+    [SerializeField] private PIDController pid_controller_pitch;
 
     private Rigidbody r_body;
     private bool enable_engine = false;
-    
+
     void Start()
     {
 
         r_body = GetComponent<Rigidbody>();
         r_body.sleepThreshold = 0.001f;
 
-        this.StartTimer(3, () => { enable_engine = true; engine.SetActive(true); });
+        this.StartTimer(engineStartDelay, () => { enable_engine = true; engine.SetActive(true); });
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -45,22 +49,52 @@ public class RocketMovement : MonoBehaviour
             targetDir = Vector3.up; // Temp
 
             Vector3 currentDir = imuObj.transform.up;
+            Vector3 currentPos = imuObj.transform.position;
+       
+            Debug.DrawRay(currentPos, currentDir, Color.blue);
+            Debug.DrawRay(currentPos, targetDir, Color.red);
+
+            Quaternion targetGimbalRot = Quaternion.AngleAxis(180, currentDir) * Quaternion.LookRotation(targetDir);
+            Vector3 targetGimbalDir = targetGimbalRot * Vector3.forward;
+
+            if (Vector3.Angle(currentDir, targetGimbalDir) >= 90)
+            {
+                targetGimbalDir = Vector3.ProjectOnPlane(targetGimbalDir, currentDir).normalized;
+                targetGimbalRot = Quaternion.LookRotation(targetGimbalDir);
+            }
+
+            Debug.DrawRay(engineGimbalPitch.transform.position, targetGimbalDir, Color.blue);
+
+            // project onto plane with current dir normal
+            Vector3 projVec = Vector3.ProjectOnPlane(targetGimbalDir, currentDir);
+            Debug.DrawRay(engineGimbalPitch.transform.position, projVec, Color.red);
+
+            float projAngle = Vector3.SignedAngle(imuObj.transform.right, projVec, currentDir);
+
+            float projVecMagnitude = projVec.magnitude;
+
+            float y = projVecMagnitude * Mathf.Sin(projAngle * Mathf.Deg2Rad);
+            float x = projVecMagnitude * Mathf.Cos(projAngle * Mathf.Deg2Rad);
 
             float angleDelta = Vector3.Angle(targetDir, currentDir);
+            float pid_result = pid_controller_pitch.UpdateAngle(Time.fixedDeltaTime, angleDelta, 0);
 
-            float pid_result = pid_controller.UpdateAngle(Time.fixedDeltaTime, angleDelta, 0);
+            // Get angles from 90 to -90
+            float yawAngle = Mathf.Asin(x * -1 * pid_result) * Mathf.Rad2Deg;
+            float pitchAngle = Mathf.Asin(y * -1 * pid_result) * Mathf.Rad2Deg;
 
-            Vector3 rotationAxis = Vector3.Cross(targetDir, currentDir);
+            engineGimbalPitch.transform.localRotation = Quaternion.Euler(-pitchAngle, 0, 0);
+            engineGimbalYaw.transform.localRotation = Quaternion.Euler(0, yawAngle, 0);
 
-            Quaternion rotation_towards_target = Quaternion.LookRotation(targetDir);
+            //print("p: " + pitchAngle + " | y: " + yawAngle);
 
-            Quaternion engine_gimal_rot_soln = Quaternion.AngleAxis(pid_result, rotationAxis);
+            //float target_gimbal_angle = Mathf.Asin(tempTest) * Mathf.Rad2Deg;
 
-            engineGimbal.transform.rotation = Quaternion.AngleAxis(180, transform.up) * engine_gimal_rot_soln * rotation_towards_target;
+
 
             // Engine force
             r_body.AddForceAtPosition(engine.transform.up * thrustForce, engine.transform.position);
-            Debug.DrawRay(engine.transform.position, engine.transform.up * -1 * 2, Color.red);
+            //Debug.DrawRay(engine.transform.position, engine.transform.up * -1 * 2, Color.red);
         }
     }
 }
