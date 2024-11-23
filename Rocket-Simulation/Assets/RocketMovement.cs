@@ -7,6 +7,7 @@ using UnityEngine;
 
 public class RocketMovement : MonoBehaviour
 {
+    [SerializeField] private float factor;
     [SerializeField] private GameObject imuObj;
 
     [SerializeField] private GameObject engineGimbalPitch;
@@ -19,6 +20,7 @@ public class RocketMovement : MonoBehaviour
     [SerializeField] private Transform target;
 
     [SerializeField] private PIDController pid_controller_pitch;
+    [SerializeField] private PIDController pid_controller_yaw;
 
     private Rigidbody r_body;
     private bool enable_engine = false;
@@ -46,13 +48,13 @@ public class RocketMovement : MonoBehaviour
         if (enable_engine)
         {
             Vector3 targetDir = (target.position - imuObj.transform.position).normalized;
-            targetDir = Vector3.up; // Temp
+            //targetDir = Vector3.up; // Temp
 
             Vector3 currentDir = imuObj.transform.up;
             Vector3 currentPos = imuObj.transform.position;
        
-            Debug.DrawRay(currentPos, currentDir, Color.blue);
-            Debug.DrawRay(currentPos, targetDir, Color.red);
+            //Debug.DrawRay(currentPos, currentDir, Color.blue);
+            //Debug.DrawRay(currentPos, targetDir, Color.red);
 
             Quaternion targetGimbalRot = Quaternion.AngleAxis(180, currentDir) * Quaternion.LookRotation(targetDir);
             Vector3 targetGimbalDir = targetGimbalRot * Vector3.forward;
@@ -66,22 +68,49 @@ public class RocketMovement : MonoBehaviour
             Debug.DrawRay(engineGimbalPitch.transform.position, targetGimbalDir, Color.blue);
 
             // project onto plane with current dir normal
-            Vector3 projVec = Vector3.ProjectOnPlane(targetGimbalDir, currentDir);
-            Debug.DrawRay(engineGimbalPitch.transform.position, projVec, Color.red);
+            //Vector3 projVec = Vector3.ProjectOnPlane(targetGimbalDir, currentDir);
+            //Debug.DrawRay(engineGimbalPitch.transform.position, projVec, Color.red);
 
-            float projAngle = Vector3.SignedAngle(imuObj.transform.right, projVec, currentDir);
+            //float projAngle = Vector3.SignedAngle(imuObj.transform.right, projVec, currentDir);
+
+            //float projAngleYaw = Vector3.SignedAngle(currentDir, targetDir, imuObj.transform.forward);
+            //float projAnglePitch = Vector3.SignedAngle(currentDir, targetDir, imuObj.transform.right);
+
+            //newwwwwww
+
+            Vector3 targetPitchDir = Vector3.ProjectOnPlane(targetDir, imuObj.transform.right).normalized;
+            Vector3 targetYawDir = Vector3.ProjectOnPlane(targetDir, imuObj.transform.forward).normalized;
+
+            float pitchAngleDelta = Vector3.SignedAngle(currentDir, targetPitchDir, imuObj.transform.right);
+            float yawAngleDelta = Vector3.SignedAngle(currentDir, targetYawDir, imuObj.transform.forward);
+
+            print(pitchAngleDelta + " | " + yawAngleDelta);
+
+            //Debug.DrawRay(currentPos, currentYawDir * 2, Color.blue);
+            //Debug.DrawRay(currentPos, targetYawDir * 2, Color.red);
 
             float projVecMagnitude = projVec.magnitude;
 
             float y = projVecMagnitude * Mathf.Sin(projAngle * Mathf.Deg2Rad);
             float x = projVecMagnitude * Mathf.Cos(projAngle * Mathf.Deg2Rad);
 
-            float angleDelta = Vector3.Angle(targetDir, currentDir);
-            float pid_result = pid_controller_pitch.UpdateAngle(Time.fixedDeltaTime, angleDelta, 0);
+            float currentPitchAngle = engineGimbalPitch.transform.localEulerAngles.x;
+            float targetPitchAngle = Mathf.Asin(y) * Mathf.Rad2Deg;
+
+            print(currentPitchAngle + " | targ: " + targetPitchAngle);
+            return;
+
+            float currentYawAngle = engineGimbalYaw.transform.localEulerAngles.y;
+            float targetYawAngle = Mathf.Asin(x) * Mathf.Rad2Deg;
+
+            float pid_result_pitch = pid_controller_pitch.UpdateAngle(Time.fixedDeltaTime, currentPitchAngle, 0);
+            float pid_result_yaw = pid_controller_yaw.UpdateAngle(Time.fixedDeltaTime, currentYawAngle, 0);
+
+            //print(pid_result_pitch);
 
             // Get angles from 90 to -90
-            float yawAngle = Mathf.Asin(x * -1 * pid_result) * Mathf.Rad2Deg;
-            float pitchAngle = Mathf.Asin(y * -1 * pid_result) * Mathf.Rad2Deg;
+            float yawAngle = Mathf.Asin(x * -1 * pid_result_yaw) * Mathf.Rad2Deg;
+            float pitchAngle = Mathf.Asin(y * -1 * pid_result_pitch) * Mathf.Rad2Deg;
 
             engineGimbalPitch.transform.localRotation = Quaternion.Euler(-pitchAngle, 0, 0);
             engineGimbalYaw.transform.localRotation = Quaternion.Euler(0, yawAngle, 0);

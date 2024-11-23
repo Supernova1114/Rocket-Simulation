@@ -1656,7 +1656,7 @@ Transform:
   m_GameObject: {fileID: 963194225}
   serializedVersion: 2
   m_LocalRotation: {x: 0.2701736, y: 0.4657982, z: -0.15183333, w: 0.8288456}
-  m_LocalPosition: {x: -18.930185, y: 63.100216, z: 18.314152}
+  m_LocalPosition: {x: -9.181073, y: 64.06312, z: 15.799241}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1722,8 +1722,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1066308945}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.839717, y: 0.32713875, z: -0.15733576, w: 0.40385774}
-  m_LocalPosition: {x: -10.35, y: 58.17, z: 21.31}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 58.17, z: 20}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1733,7 +1733,7 @@ Transform:
   - {fileID: 1305259538}
   - {fileID: 409407170}
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 128.63, y: 0, z: -42.57}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!54 &1066308947
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1759,7 +1759,7 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 0
+  m_Constraints: 110
   m_CollisionDetection: 1
 --- !u!114 &1066308948
 MonoBehaviour:
@@ -1773,14 +1773,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2d60736e4c137ff48b54c7f70b0ff659, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  factor: 0
   imuObj: {fileID: 1609975358}
   engineGimbalPitch: {fileID: 1137063799}
   engineGimbalYaw: {fileID: 950808134}
   engine: {fileID: 947286848}
-  engineStartDelay: 2
+  engineStartDelay: 0
   thrustForce: 40
   target: {fileID: 1957079605}
   pid_controller_pitch:
+    proportionalGain: 0.1
+    integralGain: 0.01
+    derivativeGain: 0.04
+    outputMin: -1
+    outputMax: 1
+    integralSaturation: 0
+    derivativeMeasurement: 0
+    valueLast: 0
+    errorLast: 0
+    integrationStored: 0
+    velocity: 0
+    derivativeInitialized: 0
+  pid_controller_yaw:
     proportionalGain: 0.1
     integralGain: 0.01
     derivativeGain: 0.04
@@ -1891,7 +1905,7 @@ Transform:
   m_GameObject: {fileID: 1181899355}
   serializedVersion: 2
   m_LocalRotation: {x: 0.2701736, y: 0.4657982, z: -0.15183333, w: 0.8288456}
-  m_LocalPosition: {x: -18.930185, y: 63.100216, z: 18.314152}
+  m_LocalPosition: {x: -9.181073, y: 64.06312, z: 15.799241}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
