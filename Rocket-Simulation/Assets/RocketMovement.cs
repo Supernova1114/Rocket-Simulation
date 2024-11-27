@@ -7,7 +7,7 @@ using UnityEngine;
 
 public class RocketMovement : MonoBehaviour
 {
-    [SerializeField] private float factor;
+    [SerializeField] private float targetVelocityDown;
     [SerializeField] private GameObject imuObj;
 
     [SerializeField] private GameObject engineGimbalPitch;
@@ -21,13 +21,14 @@ public class RocketMovement : MonoBehaviour
 
     [SerializeField] private PIDController pid_controller_pitch;
     [SerializeField] private PIDController pid_controller_yaw;
+    [SerializeField] private PIDController pid_controller_velocity;
+
 
     private Rigidbody r_body;
     private bool enable_engine = false;
 
     void Start()
     {
-
         r_body = GetComponent<Rigidbody>();
         r_body.sleepThreshold = 0.001f;
 
@@ -115,10 +116,20 @@ public class RocketMovement : MonoBehaviour
 
             //float target_gimbal_angle = Mathf.Asin(tempTest) * Mathf.Rad2Deg;
 
+            float targetVelocity = targetVelocityDown;
 
+            float pid_result_velocity = pid_controller_velocity.Update(Time.fixedDeltaTime, r_body.velocity.y, targetVelocity);
+
+           /* if (Vector3.Angle(currentDir,targetDir) > 10)
+            {
+                pid_result_velocity = 1;
+            }*/
+            
+
+            print("pid_result: " + pid_result_velocity + " | Vel_Y: " + r_body.velocity.y + " | target_vel: " + targetVelocity);
 
             // Engine force
-            r_body.AddForceAtPosition(engine.transform.up * thrustForce, engine.transform.position);
+            r_body.AddForceAtPosition(engine.transform.up * ((thrustForce * pid_result_velocity) + (r_body.mass * Mathf.Abs(Physics.gravity.y))), engine.transform.position);
             //Debug.DrawRay(engine.transform.position, engine.transform.up * -1 * 2, Color.red);
         }
     }
