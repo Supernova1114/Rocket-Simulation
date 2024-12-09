@@ -19,6 +19,9 @@ public class RocketMovement : MonoBehaviour
     [SerializeField] private float thrustForce;
     [SerializeField] private Transform target;
 
+    [SerializeField] private float rocketPitchAngle;
+    [SerializeField] private float rocketYawAngle;
+
     [SerializeField] private PIDController pid_controller_pitch;
     [SerializeField] private PIDController pid_controller_yaw;
     [SerializeField] private PIDController pid_controller_velocity;
@@ -26,6 +29,10 @@ public class RocketMovement : MonoBehaviour
 
     private Rigidbody r_body;
     private bool enable_engine = false;
+
+    private float horizontalInput;
+    private float verticalInput;
+
 
     void Start()
     {
@@ -44,12 +51,23 @@ public class RocketMovement : MonoBehaviour
         }
     }
 
+    private void Update()
+    {
+        horizontalInput = Input.GetAxisRaw("Horizontal");
+        verticalInput = Input.GetAxisRaw("Vertical");
+    }
+
     private void FixedUpdate()
     {   
         if (enable_engine)
         {
-            Vector3 targetDir = (target.position - imuObj.transform.position).normalized;
-            targetDir = Vector3.up; // Temp
+            //Vector3 targetDir = (target.position - imuObj.transform.position).normalized;
+
+            //Vector3 targetDir = Vector3.up; // Temp
+
+            Vector3 moveInput = new Vector3(horizontalInput, 0, verticalInput).normalized + transform.up;
+            Vector3 targetDir = moveInput;
+            //imuObj.transform.up
 
             Vector3 currentDir = imuObj.transform.up;
             Vector3 currentPos = imuObj.transform.position;
@@ -128,8 +146,12 @@ public class RocketMovement : MonoBehaviour
 
             print("pid_result: " + pid_result_velocity + " | Vel_Y: " + r_body.velocity.y + " | target_vel: " + targetVelocity);
 
+            float currentThrustForce = thrustForce * pid_result_velocity;
+            currentThrustForce += r_body.mass * Mathf.Abs(Physics.gravity.y); // Take into account gravity.
+            //currentThrustForce *= Mathf.Cos
+
             // Engine force
-            r_body.AddForceAtPosition(engine.transform.up * ((thrustForce * pid_result_velocity) + (r_body.mass * Mathf.Abs(Physics.gravity.y))), engine.transform.position);
+            r_body.AddForceAtPosition(engine.transform.up * currentThrustForce, engine.transform.position);
             //Debug.DrawRay(engine.transform.position, engine.transform.up * -1 * 2, Color.red);
         }
     }
