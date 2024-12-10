@@ -19,9 +19,6 @@ public class RocketMovement : MonoBehaviour
     [SerializeField] private float thrustForce;
     [SerializeField] private Transform target;
 
-    [SerializeField] private float rocketPitchAngle;
-    [SerializeField] private float rocketYawAngle;
-
     [SerializeField] private PIDController pid_controller_pitch;
     [SerializeField] private PIDController pid_controller_yaw;
     [SerializeField] private PIDController pid_controller_velocity;
@@ -33,6 +30,7 @@ public class RocketMovement : MonoBehaviour
     private float horizontalInput;
     private float verticalInput;
 
+    private Vector3 currentRot;
 
     void Start()
     {
@@ -57,6 +55,8 @@ public class RocketMovement : MonoBehaviour
         verticalInput = Input.GetAxisRaw("Vertical");
     }
 
+    
+
     private void FixedUpdate()
     {   
         if (enable_engine)
@@ -65,9 +65,18 @@ public class RocketMovement : MonoBehaviour
 
             //Vector3 targetDir = Vector3.up; // Temp
 
-            Vector3 moveInput = new Vector3(horizontalInput, 0, verticalInput).normalized + transform.up;
-            Vector3 targetDir = moveInput;
-            //imuObj.transform.up
+
+            Vector3 movementInput = new Vector3(horizontalInput, 0, verticalInput).normalized * 0.01f;
+
+            if (movementInput.sqrMagnitude > 0)
+            {
+                currentRot = imuObj.transform.up;
+                currentRot += imuObj.transform.rotation * movementInput;
+            }
+
+            Vector3 targetDir = currentRot;
+
+            Debug.DrawRay(imuObj.transform.position, targetDir, Color.red);
 
             Vector3 currentDir = imuObj.transform.up;
             Vector3 currentPos = imuObj.transform.position;
@@ -151,7 +160,7 @@ public class RocketMovement : MonoBehaviour
             //currentThrustForce *= Mathf.Cos
 
             // Engine force
-            r_body.AddForceAtPosition(engine.transform.up * currentThrustForce, engine.transform.position);
+            r_body.AddForceAtPosition(engine.transform.up * thrustForce, engine.transform.position);
             //Debug.DrawRay(engine.transform.position, engine.transform.up * -1 * 2, Color.red);
         }
     }
