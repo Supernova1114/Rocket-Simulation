@@ -82,7 +82,7 @@ public class RocketMovement : MonoBehaviour
             }
             else
             {
-                targetDir = Vector3.up; // Temp
+                targetDir = Vector3.up + Vector3.forward; // Temp
             }
 
 
@@ -157,9 +157,9 @@ public class RocketMovement : MonoBehaviour
 
             // Get angles from 90 to -90
             float yawAngle = Mathf.Asin(x * -1 * pid_result_yaw) * Mathf.Rad2Deg;
-            float pitchAngle = Mathf.Asin(y * -1 * pid_result_pitch) * Mathf.Rad2Deg;
+            float pitchAngle = -1 * Mathf.Asin(y * -1 * pid_result_pitch) * Mathf.Rad2Deg;
 
-            engineGimbalPitch.transform.localRotation = Quaternion.Euler(-pitchAngle, 0, 0);
+            engineGimbalPitch.transform.localRotation = Quaternion.Euler(pitchAngle, 0, 0);
             engineGimbalYaw.transform.localRotation = Quaternion.Euler(0, yawAngle, 0);
 
             //print("p: " + pitchAngle + " | y: " + yawAngle);
@@ -183,8 +183,12 @@ public class RocketMovement : MonoBehaviour
             if (Mathf.Abs(currentThrustForce) > 0)
             {
                 currentThrustForce += r_body.mass * Mathf.Abs(Physics.gravity.y); // Take into account gravity.
+
+                // TODO - Take into account both pitch AND yaw
+                currentThrustForce /= Mathf.Cos(Mathf.Deg2Rad * convertAngleRange(imuObj.transform.eulerAngles.z));
             }
             //currentThrustForce *= Mathf.Cos
+
 
             // Engine force
             r_body.AddForceAtPosition(engine.transform.up * currentThrustForce, engine.transform.position);
@@ -196,5 +200,11 @@ public class RocketMovement : MonoBehaviour
 
         telemetry.currentVelocity = r_body.velocity;
         ui_manager.UpdateTelemetryData(telemetry);
+    }
+
+
+    private float convertAngleRange(float angle)
+    {
+        return angle > 180 ? angle - 360 : angle;
     }
 }
