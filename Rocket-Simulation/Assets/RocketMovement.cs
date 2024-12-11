@@ -7,6 +7,8 @@ using UnityEngine;
 
 public class RocketMovement : MonoBehaviour
 {
+    [SerializeField] private bool rotateTowardsTargetObj = false;
+    [SerializeField] private bool enableManualControl = false;
     [SerializeField] private float targetVelocityDown;
     [SerializeField] private GameObject imuObj;
 
@@ -31,9 +33,16 @@ public class RocketMovement : MonoBehaviour
     private float verticalInput;
 
     private Vector3 currentRot;
+    private Vector3 targetDir;
+
+    private static UIManager ui_manager;
+
+    private RocketTelemetry telemetry = new RocketTelemetry();
 
     void Start()
     {
+        ui_manager = UIManager.GetInstance();
+
         r_body = GetComponent<Rigidbody>();
         r_body.sleepThreshold = 0.001f;
 
@@ -53,6 +62,11 @@ public class RocketMovement : MonoBehaviour
     {
         horizontalInput = Input.GetAxisRaw("Horizontal");
         verticalInput = Input.GetAxisRaw("Vertical");
+
+        targetVelocityDown = ui_manager.get_y_velocity_value();
+        r_body.mass = ui_manager.get_mass_value();
+        //thrustForce = ui_manager.get_max_thrust_value();
+        enableManualControl = ui_manager.get_manual_control_bool();
     }
 
     
@@ -61,28 +75,37 @@ public class RocketMovement : MonoBehaviour
     {   
         if (enable_engine)
         {
-            //Vector3 targetDir = (target.position - imuObj.transform.position).normalized;
-
-            //Vector3 targetDir = Vector3.up; // Temp
-
-
-            Vector3 movementInput = new Vector3(horizontalInput, 0, verticalInput).normalized * 0.01f;
-
-            if (movementInput.sqrMagnitude > 0)
+            
+            if (rotateTowardsTargetObj)
             {
-                currentRot = imuObj.transform.up;
-                currentRot += imuObj.transform.rotation * movementInput;
+                targetDir = (target.position - imuObj.transform.position).normalized;
+            }
+            else
+            {
+                targetDir = Vector3.up; // Temp
             }
 
-            Vector3 targetDir = currentRot;
+
+            // Enable manual control 
+
+            if (enableManualControl == true)
+            {
+                Vector3 movementInput = new Vector3(horizontalInput, 0, verticalInput).normalized * 0.01f;
+
+                if (movementInput.sqrMagnitude > 0)
+                {
+                    currentRot = imuObj.transform.up;
+                    currentRot += imuObj.transform.rotation * movementInput;
+                }
+
+                targetDir = currentRot;
+            }
+            
 
             Debug.DrawRay(imuObj.transform.position, targetDir, Color.red);
 
             Vector3 currentDir = imuObj.transform.up;
             Vector3 currentPos = imuObj.transform.position;
-       
-            //Debug.DrawRay(currentPos, currentDir, Color.blue);
-            //Debug.DrawRay(currentPos, targetDir, Color.red);
 
             Quaternion targetGimbalRot = Quaternion.AngleAxis(180, currentDir) * Quaternion.LookRotation(targetDir);
             Vector3 targetGimbalDir = targetGimbalRot * Vector3.forward;
@@ -156,12 +179,22 @@ public class RocketMovement : MonoBehaviour
             print("pid_result: " + pid_result_velocity + " | Vel_Y: " + r_body.velocity.y + " | target_vel: " + targetVelocity);
 
             float currentThrustForce = thrustForce * pid_result_velocity;
-            currentThrustForce += r_body.mass * Mathf.Abs(Physics.gravity.y); // Take into account gravity.
+
+            if (Mathf.Abs(currentThrustForce) > 0)
+            {
+                currentThrustForce += r_body.mass * Mathf.Abs(Physics.gravity.y); // Take into account gravity.
+            }
             //currentThrustForce *= Mathf.Cos
 
             // Engine force
-            r_body.AddForceAtPosition(engine.transform.up * thrustForce, engine.transform.position);
+            r_body.AddForceAtPosition(engine.transform.up * currentThrustForce, engine.transform.position);
             //Debug.DrawRay(engine.transform.position, engine.transform.up * -1 * 2, Color.red);
+
+            // Send telemetry to UI
+            telemetry.currentThrustForce = currentThrustForce;
         }
+
+        telemetry.currentVelocity = r_body.velocity;
+        ui_manager.UpdateTelemetryData(telemetry);
     }
 }
