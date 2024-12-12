@@ -46,6 +46,8 @@ public class RocketMovement : MonoBehaviour
         r_body = GetComponent<Rigidbody>();
         r_body.sleepThreshold = 0.001f;
 
+        currentRot = imuObj.transform.up;
+
         this.StartTimer(engineStartDelay, () => { enable_engine = true; engine.SetActive(true); });
     }
 
@@ -82,7 +84,7 @@ public class RocketMovement : MonoBehaviour
             }
             else
             {
-                targetDir = Vector3.up + Vector3.forward; // Temp
+                targetDir = Vector3.up; // Temp
             }
 
 
@@ -90,11 +92,10 @@ public class RocketMovement : MonoBehaviour
 
             if (enableManualControl == true)
             {
-                Vector3 movementInput = new Vector3(horizontalInput, 0, verticalInput).normalized * 0.01f;
+                Vector3 movementInput = new Vector3(-1 * horizontalInput, 0, -1 * verticalInput).normalized * 0.03f;
 
                 if (movementInput.sqrMagnitude > 0)
                 {
-                    currentRot = imuObj.transform.up;
                     currentRot += imuObj.transform.rotation * movementInput;
                 }
 
@@ -146,8 +147,8 @@ public class RocketMovement : MonoBehaviour
 
             //float projVecMagnitude = projVec.magnitude;
 
-            float y = targetPitchDir.magnitude * Mathf.Sin(projAngle * Mathf.Deg2Rad);
-            float x = targetYawDir.magnitude * Mathf.Cos(projAngle * Mathf.Deg2Rad);
+            float y = Mathf.Sin(projAngle * Mathf.Deg2Rad);
+            float x = Mathf.Cos(projAngle * Mathf.Deg2Rad);
 
             /*float currentPitchAngle = engineGimbalPitch.transform.localEulerAngles.x;
             float targetPitchAngle = Mathf.Asin(y) * Mathf.Rad2Deg;
@@ -159,6 +160,7 @@ public class RocketMovement : MonoBehaviour
             float yawAngle = Mathf.Asin(x * -1 * pid_result_yaw) * Mathf.Rad2Deg;
             float pitchAngle = -1 * Mathf.Asin(y * -1 * pid_result_pitch) * Mathf.Rad2Deg;
 
+            //print(y * -1 * pid_result_pitch);
             engineGimbalPitch.transform.localRotation = Quaternion.Euler(pitchAngle, 0, 0);
             engineGimbalYaw.transform.localRotation = Quaternion.Euler(0, yawAngle, 0);
 
@@ -170,25 +172,39 @@ public class RocketMovement : MonoBehaviour
 
             float pid_result_velocity = pid_controller_velocity.Update(Time.fixedDeltaTime, r_body.velocity.y, targetVelocity);
 
-           /* if (Vector3.Angle(currentDir,targetDir) > 10)
-            {
-                pid_result_velocity = 1;
-            }*/
-            
+            /* if (Vector3.Angle(currentDir,targetDir) > 10)
+             {
+                 pid_result_velocity = 1;
+             }*/
 
-            print("pid_result: " + pid_result_velocity + " | Vel_Y: " + r_body.velocity.y + " | target_vel: " + targetVelocity);
+
+            //print("pid_result: " + pid_result_velocity + " | Vel_Y: " + r_body.velocity.y + " | target_vel: " + targetVelocity);
 
             float currentThrustForce = thrustForce * pid_result_velocity;
 
             if (Mathf.Abs(currentThrustForce) > 0)
             {
-                currentThrustForce += r_body.mass * Mathf.Abs(Physics.gravity.y); // Take into account gravity.
 
                 // TODO - Take into account both pitch AND yaw
-                currentThrustForce /= Mathf.Cos(Mathf.Deg2Rad * convertAngleRange(imuObj.transform.eulerAngles.z));
+                //currentThrustForce /= Mathf.Cos(Mathf.Deg2Rad * convertAngleRange(imuObj.transform.eulerAngles.z));
+                float rocketAngle = Vector3.Angle(Vector3.up, imuObj.transform.up);
+
+                if (rocketAngle < 75)
+                {
+                    currentThrustForce += r_body.mass * Mathf.Abs(Physics.gravity.y); // Take into account gravity.
+
+                    print(Mathf.Cos(Mathf.Deg2Rad * rocketAngle));
+                    currentThrustForce /= Mathf.Cos(Mathf.Deg2Rad * rocketAngle);
+                }
             }
+            
             //currentThrustForce *= Mathf.Cos
 
+            // limit force output
+            if (currentThrustForce > thrustForce)
+            {
+                currentThrustForce = thrustForce;
+            }
 
             // Engine force
             r_body.AddForceAtPosition(engine.transform.up * currentThrustForce, engine.transform.position);
