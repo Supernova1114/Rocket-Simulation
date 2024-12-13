@@ -7,6 +7,7 @@ using UnityEngine;
 
 public class RocketMovement : MonoBehaviour
 {
+    [SerializeField] private float targetZVelocityTest = 0;
     [SerializeField] private bool rotateTowardsTargetObj = false;
     [SerializeField] private bool enableManualControl = false;
     [SerializeField] private float targetVelocityDown;
@@ -24,6 +25,7 @@ public class RocketMovement : MonoBehaviour
     [SerializeField] private PIDController pid_controller_pitch;
     [SerializeField] private PIDController pid_controller_yaw;
     [SerializeField] private PIDController pid_controller_velocity;
+    [SerializeField] private PIDController pid_controller_planar_velocity;
 
 
     private Rigidbody r_body;
@@ -54,7 +56,7 @@ public class RocketMovement : MonoBehaviour
     private void OnCollisionEnter(Collision collision)
     {
         if (collision.transform.CompareTag("ground_plane"))
-        {
+        { 
             enable_engine = false;
             engine.SetActive(false);
         }
@@ -77,8 +79,8 @@ public class RocketMovement : MonoBehaviour
     {   
         if (enable_engine)
         {
-            
-            if (rotateTowardsTargetObj)
+
+            /*if (rotateTowardsTargetObj)
             {
                 targetDir = (target.position - imuObj.transform.position).normalized;
             }
@@ -100,8 +102,28 @@ public class RocketMovement : MonoBehaviour
                 }
 
                 targetDir = currentRot;
-            }
-            
+            }*/
+
+
+            // Planar Velocity Control ---------------------------
+
+            //Vector3 targetPlanarVelocity = Vector3.forward * targetZVelocityTest;
+
+            //Vector3 currentPlanarVelocity = new Vector3(r_body.velocity.x, 0, r_body.velocity.z);
+
+            float pid_result_planar_velocity = pid_controller_planar_velocity.Update(Time.fixedDeltaTime, r_body.velocity.z, -1 * targetZVelocityTest);
+
+            float maxRocketAngle = 65;
+
+            targetDir = Quaternion.AngleAxis(maxRocketAngle * pid_result_planar_velocity, Vector3.right) * Vector3.up;
+            //targetDir = imuObj.transform.up;
+
+            //print("CurrentZVel: " + r_body.velocity.z + " | TargetZVel: " + -1 * targetZVelocityTest);
+
+
+            print(pid_result_planar_velocity);
+
+            // Orient Rocket -------------------------------------------
 
             Debug.DrawRay(imuObj.transform.position, targetDir, Color.red);
 
@@ -160,45 +182,29 @@ public class RocketMovement : MonoBehaviour
             float yawAngle = Mathf.Asin(x * -1 * pid_result_yaw) * Mathf.Rad2Deg;
             float pitchAngle = -1 * Mathf.Asin(y * -1 * pid_result_pitch) * Mathf.Rad2Deg;
 
-            //print(y * -1 * pid_result_pitch);
             engineGimbalPitch.transform.localRotation = Quaternion.Euler(pitchAngle, 0, 0);
             engineGimbalYaw.transform.localRotation = Quaternion.Euler(0, yawAngle, 0);
 
-            //print("p: " + pitchAngle + " | y: " + yawAngle);
-
-            //float target_gimbal_angle = Mathf.Asin(tempTest) * Mathf.Rad2Deg;
+            // Y-Velocity Control -------------------------------
 
             float targetVelocity = targetVelocityDown;
 
             float pid_result_velocity = pid_controller_velocity.Update(Time.fixedDeltaTime, r_body.velocity.y, targetVelocity);
 
-            /* if (Vector3.Angle(currentDir,targetDir) > 10)
-             {
-                 pid_result_velocity = 1;
-             }*/
-
-
-            //print("pid_result: " + pid_result_velocity + " | Vel_Y: " + r_body.velocity.y + " | target_vel: " + targetVelocity);
-
             float currentThrustForce = thrustForce * pid_result_velocity;
 
             if (Mathf.Abs(currentThrustForce) > 0)
             {
-
-                // TODO - Take into account both pitch AND yaw
-                //currentThrustForce /= Mathf.Cos(Mathf.Deg2Rad * convertAngleRange(imuObj.transform.eulerAngles.z));
                 float rocketAngle = Vector3.Angle(Vector3.up, imuObj.transform.up);
 
-                if (rocketAngle < 75)
+                if (rocketAngle < 80)
                 {
                     currentThrustForce += r_body.mass * Mathf.Abs(Physics.gravity.y); // Take into account gravity.
-
-                    print(Mathf.Cos(Mathf.Deg2Rad * rocketAngle));
                     currentThrustForce /= Mathf.Cos(Mathf.Deg2Rad * rocketAngle);
                 }
             }
             
-            //currentThrustForce *= Mathf.Cos
+            // ---------------------------------------------------
 
             // limit force output
             if (currentThrustForce > thrustForce)

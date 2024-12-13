@@ -63,6 +63,7 @@ public class UIManager : MonoBehaviour
     public void UpdateTelemetryData(RocketTelemetry rocket_telemetry)
     {
         telemetry_text.text = "Y-Velocity: " + rocket_telemetry.currentVelocity.y + " m/s\n"
+                            + "Z-Velocity: " + rocket_telemetry.currentVelocity.z + "m/s\n"
                             + "Current Thrust: " + rocket_telemetry.currentThrustForce + " N";
     }
 
