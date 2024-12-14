@@ -13869,8 +13869,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.00030918387, y: 0.8834655, z: -0.4684958, w: -0.00058304326}
-  m_LocalPosition: {x: 992.01337, y: 277.5506, z: -13621.973}
+  m_LocalRotation: {x: -0.0002763876, y: 0.8835494, z: -0.46833766, w: -0.00052142306}
+  m_LocalPosition: {x: 992.01196, y: 277.54703, z: -13621.968}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -15225,7 +15225,7 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 98
+  m_Constraints: 0
   m_CollisionDetection: 1
 --- !u!114 &1066308948
 MonoBehaviour:
@@ -15240,6 +15240,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   targetZVelocityTest: 0
+  targetXVelocityTest: 0
   rotateTowardsTargetObj: 0
   enableManualControl: 0
   targetVelocityDown: 0
@@ -15248,7 +15249,7 @@ MonoBehaviour:
   engineGimbalYaw: {fileID: 950808134}
   engine: {fileID: 947286848}
   engineStartDelay: 0
-  thrustForce: 80.9
+  thrustForce: 150
   target: {fileID: 1957079605}
   pid_controller_pitch:
     proportionalGain: 0.05
@@ -15292,7 +15293,20 @@ MonoBehaviour:
   pid_controller_planar_velocity:
     proportionalGain: 0.02
     integralGain: 0
-    derivativeGain: 0.002
+    derivativeGain: 0.001
+    outputMin: -1
+    outputMax: 1
+    integralSaturation: 0
+    derivativeMeasurement: 0
+    valueLast: 0
+    errorLast: 0
+    integrationStored: 0
+    velocity: 0
+    derivativeInitialized: 0
+  pid_controller_planar_velocity_2:
+    proportionalGain: 0.02
+    integralGain: 0
+    derivativeGain: 0.001
     outputMin: -1
     outputMax: 1
     integralSaturation: 0
@@ -16738,8 +16752,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1181899355}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.00030918387, y: 0.8834655, z: -0.4684958, w: -0.00058304326}
-  m_LocalPosition: {x: 992.01337, y: 277.5506, z: -13621.973}
+  m_LocalRotation: {x: -0.0002763876, y: 0.8835494, z: -0.46833766, w: -0.00052142306}
+  m_LocalPosition: {x: 992.01196, y: 277.54703, z: -13621.968}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:

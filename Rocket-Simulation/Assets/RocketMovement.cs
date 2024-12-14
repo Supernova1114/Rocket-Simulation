@@ -8,6 +8,7 @@ using UnityEngine;
 public class RocketMovement : MonoBehaviour
 {
     [SerializeField] private float targetZVelocityTest = 0;
+    [SerializeField] private float targetXVelocityTest = 0;
     [SerializeField] private bool rotateTowardsTargetObj = false;
     [SerializeField] private bool enableManualControl = false;
     [SerializeField] private float targetVelocityDown;
@@ -26,6 +27,7 @@ public class RocketMovement : MonoBehaviour
     [SerializeField] private PIDController pid_controller_yaw;
     [SerializeField] private PIDController pid_controller_velocity;
     [SerializeField] private PIDController pid_controller_planar_velocity;
+    [SerializeField] private PIDController pid_controller_planar_velocity_2;
 
 
     private Rigidbody r_body;
@@ -73,7 +75,17 @@ public class RocketMovement : MonoBehaviour
         enableManualControl = ui_manager.get_manual_control_bool();
     }
 
-    
+    // Pitch
+    private float pid_avg = 0;
+    private float pid_sum = 0;
+    private int pid_count = 0;
+    private int pid_max_window = 5;
+
+    // Yaw
+    private float pid_avg_2 = 0;
+    private float pid_sum_2 = 0;
+    private int pid_count_2 = 0;
+    private int pid_max_window_2 = 5;
 
     private void FixedUpdate()
     {   
@@ -111,17 +123,49 @@ public class RocketMovement : MonoBehaviour
 
             //Vector3 currentPlanarVelocity = new Vector3(r_body.velocity.x, 0, r_body.velocity.z);
 
+            if (pid_count > pid_max_window)
+            {
+                pid_count = 0;
+                pid_sum = 0;
+                pid_avg = 0;
+            }
+
+            // Pitch ---------------------
             float pid_result_planar_velocity = pid_controller_planar_velocity.Update(Time.fixedDeltaTime, r_body.velocity.z, -1 * targetZVelocityTest);
 
-            float maxRocketAngle = 65;
+            pid_sum += pid_result_planar_velocity;
+            pid_count++;
 
-            targetDir = Quaternion.AngleAxis(maxRocketAngle * pid_result_planar_velocity, Vector3.right) * Vector3.up;
+            pid_avg = pid_sum / pid_count;
+
+            // Yaw ------------------------
+
+            if (pid_count_2 > pid_max_window_2)
+            {
+                pid_count_2 = 0;
+                pid_sum_2 = 0;
+                pid_avg_2 = 0;
+            }
+
+
+            float pid_result_planar_velocity_2 = pid_controller_planar_velocity_2.Update(Time.fixedDeltaTime, r_body.velocity.x, targetXVelocityTest);
+
+            print(r_body.velocity.x + " | " + targetXVelocityTest);
+
+            pid_sum_2 += pid_result_planar_velocity_2;
+            pid_count_2++;
+
+            pid_avg_2 = pid_sum_2 / pid_count_2;
+
+
+            float maxRocketAngle = 70;
+            targetDir = Quaternion.AngleAxis(maxRocketAngle * pid_avg, Vector3.right) * Quaternion.AngleAxis(maxRocketAngle * pid_avg_2, -1 * Vector3.forward) * Vector3.up;
             //targetDir = imuObj.transform.up;
 
             //print("CurrentZVel: " + r_body.velocity.z + " | TargetZVel: " + -1 * targetZVelocityTest);
 
 
-            print(pid_result_planar_velocity);
+            //print(pid_result_planar_velocity);
 
             // Orient Rocket -------------------------------------------
 
@@ -197,7 +241,8 @@ public class RocketMovement : MonoBehaviour
             {
                 float rocketAngle = Vector3.Angle(Vector3.up, imuObj.transform.up);
 
-                if (rocketAngle < 80)
+
+                if (rocketAngle < 75)
                 {
                     currentThrustForce += r_body.mass * Mathf.Abs(Physics.gravity.y); // Take into account gravity.
                     currentThrustForce /= Mathf.Cos(Mathf.Deg2Rad * rocketAngle);
