@@ -9,6 +9,12 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Slider y_velocity_slider;
     [SerializeField] private TextMeshProUGUI y_velocity_text;
     [Space]
+    [SerializeField] private Slider x_velocity_slider;
+    [SerializeField] private TextMeshProUGUI x_velocity_text;
+    [Space]
+    [SerializeField] private Slider z_velocity_slider;
+    [SerializeField] private TextMeshProUGUI z_velocity_text;
+    [Space]
     [SerializeField] private Slider mass_slider;
     [SerializeField] private TextMeshProUGUI mass_text;
     [Space]
@@ -35,7 +41,10 @@ public class UIManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        y_velocity_text.text = "Y-Velocity: " + y_velocity_slider.value + " m/s";
+        y_velocity_text.text = "Y-Vel: " + y_velocity_slider.value + " m/s";
+        x_velocity_text.text = "X-Vel: " + x_velocity_slider.value + " m/s";
+        z_velocity_text.text = "Z-Vel: " + z_velocity_slider.value + " m/s";
+
         mass_text.text = "Mass: " + mass_slider.value + " kg";
         //max_thrust_text.text = "Max Thrust: " + max_thrust_slider.value + " N";
     }
@@ -48,6 +57,16 @@ public class UIManager : MonoBehaviour
     public float get_y_velocity_value()
     {
         return y_velocity_slider.value;
+    }
+
+    public float get_x_velocity_value()
+    {
+        return x_velocity_slider.value;
+    }
+
+    public float get_z_velocity_value()
+    {
+        return z_velocity_slider.value;
     }
 
     public float get_mass_value()

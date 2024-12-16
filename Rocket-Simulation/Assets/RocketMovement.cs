@@ -70,6 +70,9 @@ public class RocketMovement : MonoBehaviour
         verticalInput = Input.GetAxisRaw("Vertical");
 
         targetVelocityDown = ui_manager.get_y_velocity_value();
+        targetXVelocityTest = ui_manager.get_x_velocity_value();
+        targetZVelocityTest = ui_manager.get_z_velocity_value();
+
         r_body.mass = ui_manager.get_mass_value();
         //thrustForce = ui_manager.get_max_thrust_value();
         enableManualControl = ui_manager.get_manual_control_bool();
@@ -164,20 +167,26 @@ public class RocketMovement : MonoBehaviour
             pid_count_2++;
             pid_avg_2 = pid_sum_2 / pid_count_2;
 
-            float maxRocketAngle = 10;
-
+            float maxRocketAngle = 77;
 
             // Find components for targetDir
             float x_comp = Mathf.Sin(Mathf.Deg2Rad * maxRocketAngle * pid_avg_2);
             float z_comp = Mathf.Sin(Mathf.Deg2Rad * maxRocketAngle * pid_avg);
 
+            float tiltAngleRad = Mathf.Acos(Mathf.Clamp(new Vector3(x_comp, 0, z_comp).magnitude, 0, 0.95f));
+            float y_comp = Mathf.Sin(tiltAngleRad);
 
-
-            float tiltAngleRad = Mathf.Asin(new Vector2(x_comp, z_comp).magnitude);
-            print(tiltAngleRad * Mathf.Rad2Deg);
-            float y_comp = Mathf.Cos(tiltAngleRad);
+            //Debug.DrawRay(imuObj.transform.position, new Vector3(x_comp, y_comp, z_comp) * 2, Color.red);
 
             targetDir = new Vector3(x_comp, y_comp, z_comp);
+            print(targetDir);
+
+            //float tiltAngleRad = Mathf.Asin(new Vector2(x_comp, z_comp).magnitude);
+            //print(tiltAngleRad * Mathf.Rad2Deg);
+            //float y_comp = Mathf.Cos(tiltAngleRad);
+
+            //targetDir = new Vector3(x_comp, y_comp, z_comp);
+            //targetDir = Vector3.up;
 
             //Vector3 tiltAxis = Vector3.Cross(targetPlanarVelocity.normalized, Vector3.up);
             //Vector3 targetDir = Quaternion.AngleAxis(maxRocketAngle * pid_avg, tiltAxis) * Vector3.up;
@@ -186,7 +195,7 @@ public class RocketMovement : MonoBehaviour
 
             // Orient Rocket -------------------------------------------
 
-            Debug.DrawRay(imuObj.transform.position, targetDir, Color.red);
+            //Debug.DrawRay(imuObj.transform.position, targetDir, Color.red);
 
             Vector3 currentDir = imuObj.transform.up;
             Vector3 currentPos = imuObj.transform.position;
