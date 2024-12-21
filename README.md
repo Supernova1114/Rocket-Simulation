@@ -9,10 +9,11 @@ Author: Cameron Rosenthal @Supernova1114
 ### TODO
 - [x] Add orientation control.
 - [x] Add y-vertical velocity control.
-- [ ] Add xz-planar velocity control.
+- [x] Add xz-planar velocity control.
 - [ ] Add 3D rocket position control.
 - [ ] Add torque-based PID control to gimbal.
 
 ### Preview
 
 ![](repo-images/rocket-landing.gif)
+![](repo-images/velocity-control.gif)
