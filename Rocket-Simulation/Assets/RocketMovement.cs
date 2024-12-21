@@ -7,6 +7,10 @@ using UnityEngine;
 
 public class RocketMovement : MonoBehaviour
 {
+    [SerializeField] private float targetZVelocityTest = 0;
+    [SerializeField] private float targetXVelocityTest = 0;
+    [SerializeField] private bool rotateTowardsTargetObj = false;
+    [SerializeField] private bool enableManualControl = false;
     [SerializeField] private float targetVelocityDown;
     [SerializeField] private GameObject imuObj;
 
@@ -22,15 +26,31 @@ public class RocketMovement : MonoBehaviour
     [SerializeField] private PIDController pid_controller_pitch;
     [SerializeField] private PIDController pid_controller_yaw;
     [SerializeField] private PIDController pid_controller_velocity;
+    [SerializeField] private PIDController pid_controller_planar_velocity;
+    [SerializeField] private PIDController pid_controller_planar_velocity_2;
 
 
     private Rigidbody r_body;
     private bool enable_engine = false;
 
+    private float horizontalInput;
+    private float verticalInput;
+
+    private Vector3 currentRot;
+    private Vector3 targetDir;
+
+    private static UIManager ui_manager;
+
+    private RocketTelemetry telemetry = new RocketTelemetry();
+
     void Start()
     {
+        ui_manager = UIManager.GetInstance();
+
         r_body = GetComponent<Rigidbody>();
         r_body.sleepThreshold = 0.001f;
+
+        currentRot = imuObj.transform.up;
 
         this.StartTimer(engineStartDelay, () => { enable_engine = true; engine.SetActive(true); });
     }
@@ -38,24 +58,147 @@ public class RocketMovement : MonoBehaviour
     private void OnCollisionEnter(Collision collision)
     {
         if (collision.transform.CompareTag("ground_plane"))
-        {
+        { 
             enable_engine = false;
             engine.SetActive(false);
         }
     }
 
+    private void Update()
+    {
+        horizontalInput = Input.GetAxisRaw("Horizontal");
+        verticalInput = Input.GetAxisRaw("Vertical");
+
+        targetVelocityDown = ui_manager.get_y_velocity_value();
+        targetXVelocityTest = ui_manager.get_x_velocity_value();
+        targetZVelocityTest = ui_manager.get_z_velocity_value();
+
+        r_body.mass = ui_manager.get_mass_value();
+        //thrustForce = ui_manager.get_max_thrust_value();
+        enableManualControl = ui_manager.get_manual_control_bool();
+    }
+
+    // Pitch
+    private float pid_avg = 0;
+    private float pid_sum = 0;
+    private int pid_count = 0;
+    private int pid_max_window = 5;
+
+    // Yaw
+    private float pid_avg_2 = 0;
+    private float pid_sum_2 = 0;
+    private int pid_count_2 = 0;
+    private int pid_max_window_2 = 5;
+
+
     private void FixedUpdate()
     {   
         if (enable_engine)
         {
-            Vector3 targetDir = (target.position - imuObj.transform.position).normalized;
-            targetDir = Vector3.up; // Temp
+
+            /*if (rotateTowardsTargetObj)
+            {
+                targetDir = (target.position - imuObj.transform.position).normalized;
+            }
+            else
+            {
+                targetDir = Vector3.up; // Temp
+            }
+
+
+            // Enable manual control 
+
+            if (enableManualControl == true)
+            {
+                Vector3 movementInput = new Vector3(-1 * horizontalInput, 0, -1 * verticalInput).normalized * 0.03f;
+
+                if (movementInput.sqrMagnitude > 0)
+                {
+                    currentRot += imuObj.transform.rotation * movementInput;
+                }
+
+                targetDir = currentRot;
+            }*/
+
+
+            // Planar Velocity Control ---------------------------
+
+            //Vector3 targetPlanarVelocity = Vector3.forward * targetZVelocityTest;
+
+            //Vector3 currentPlanarVelocity = new Vector3(r_body.velocity.x, 0, r_body.velocity.z);
+
+
+
+            // Planar Velocity Control ---------------------
+
+            
+
+            Vector3 velocityXZ = new Vector3(r_body.velocity.x, 0, r_body.velocity.z);
+            Vector3 targetPlanarVelocity = new Vector3(targetXVelocityTest, 0, targetZVelocityTest);
+
+            // Z Velocity Control ----------------------------------------------------------------------
+
+            if (pid_count > pid_max_window)
+            {
+                pid_count = 0;
+                pid_sum = 0;
+                pid_avg = 0;
+            }
+
+            float pid_result_planar_velocity = pid_controller_planar_velocity.Update(Time.fixedDeltaTime, velocityXZ.z, targetPlanarVelocity.z);
+
+            pid_sum += pid_result_planar_velocity;
+            pid_count++;
+            pid_avg = pid_sum / pid_count;
+
+
+            // X Velocity Control ----------------------------------------------------------------------
+
+            if (pid_count_2 > pid_max_window_2)
+            {
+                pid_count_2 = 0;
+                pid_sum_2 = 0;
+                pid_avg_2 = 0;
+            }
+
+            float pid_result_planar_velocity_2 = pid_controller_planar_velocity_2.Update(Time.fixedDeltaTime, velocityXZ.x, targetPlanarVelocity.x);
+
+            pid_sum_2 += pid_result_planar_velocity_2;
+            pid_count_2++;
+            pid_avg_2 = pid_sum_2 / pid_count_2;
+
+            float maxRocketAngle = 77;
+
+            // Find components for targetDir
+            float x_comp = Mathf.Sin(Mathf.Deg2Rad * maxRocketAngle * pid_avg_2);
+            float z_comp = Mathf.Sin(Mathf.Deg2Rad * maxRocketAngle * pid_avg);
+
+            float tiltAngleRad = Mathf.Acos(Mathf.Clamp(new Vector3(x_comp, 0, z_comp).magnitude, 0, 0.95f));
+            float y_comp = Mathf.Sin(tiltAngleRad);
+
+            //Debug.DrawRay(imuObj.transform.position, new Vector3(x_comp, y_comp, z_comp) * 2, Color.red);
+
+            targetDir = new Vector3(x_comp, y_comp, z_comp);
+            print(targetDir);
+
+            //float tiltAngleRad = Mathf.Asin(new Vector2(x_comp, z_comp).magnitude);
+            //print(tiltAngleRad * Mathf.Rad2Deg);
+            //float y_comp = Mathf.Cos(tiltAngleRad);
+
+            //targetDir = new Vector3(x_comp, y_comp, z_comp);
+            //targetDir = Vector3.up;
+
+            //Vector3 tiltAxis = Vector3.Cross(targetPlanarVelocity.normalized, Vector3.up);
+            //Vector3 targetDir = Quaternion.AngleAxis(maxRocketAngle * pid_avg, tiltAxis) * Vector3.up;
+
+            //print("CurrentZVel: " + r_body.velocity.z + " | TargetZVel: " + -1 * targetZVelocityTest);
+
+            // Orient Rocket -------------------------------------------
+
+            //Debug.DrawRay(imuObj.transform.position, targetDir, Color.red);
 
             Vector3 currentDir = imuObj.transform.up;
             Vector3 currentPos = imuObj.transform.position;
-       
-            //Debug.DrawRay(currentPos, currentDir, Color.blue);
-            //Debug.DrawRay(currentPos, targetDir, Color.red);
 
             Quaternion targetGimbalRot = Quaternion.AngleAxis(180, currentDir) * Quaternion.LookRotation(targetDir);
             Vector3 targetGimbalDir = targetGimbalRot * Vector3.forward;
@@ -96,8 +239,8 @@ public class RocketMovement : MonoBehaviour
 
             //float projVecMagnitude = projVec.magnitude;
 
-            float y = targetPitchDir.magnitude * Mathf.Sin(projAngle * Mathf.Deg2Rad);
-            float x = targetYawDir.magnitude * Mathf.Cos(projAngle * Mathf.Deg2Rad);
+            float y = Mathf.Sin(projAngle * Mathf.Deg2Rad);
+            float x = Mathf.Cos(projAngle * Mathf.Deg2Rad);
 
             /*float currentPitchAngle = engineGimbalPitch.transform.localEulerAngles.x;
             float targetPitchAngle = Mathf.Asin(y) * Mathf.Rad2Deg;
@@ -107,30 +250,54 @@ public class RocketMovement : MonoBehaviour
 
             // Get angles from 90 to -90
             float yawAngle = Mathf.Asin(x * -1 * pid_result_yaw) * Mathf.Rad2Deg;
-            float pitchAngle = Mathf.Asin(y * -1 * pid_result_pitch) * Mathf.Rad2Deg;
+            float pitchAngle = -1 * Mathf.Asin(y * -1 * pid_result_pitch) * Mathf.Rad2Deg;
 
-            engineGimbalPitch.transform.localRotation = Quaternion.Euler(-pitchAngle, 0, 0);
+            engineGimbalPitch.transform.localRotation = Quaternion.Euler(pitchAngle, 0, 0);
             engineGimbalYaw.transform.localRotation = Quaternion.Euler(0, yawAngle, 0);
 
-            //print("p: " + pitchAngle + " | y: " + yawAngle);
-
-            //float target_gimbal_angle = Mathf.Asin(tempTest) * Mathf.Rad2Deg;
+            // Y-Velocity Control -------------------------------
 
             float targetVelocity = targetVelocityDown;
 
             float pid_result_velocity = pid_controller_velocity.Update(Time.fixedDeltaTime, r_body.velocity.y, targetVelocity);
 
-           /* if (Vector3.Angle(currentDir,targetDir) > 10)
-            {
-                pid_result_velocity = 1;
-            }*/
-            
+            float currentThrustForce = thrustForce * pid_result_velocity;
 
-            print("pid_result: " + pid_result_velocity + " | Vel_Y: " + r_body.velocity.y + " | target_vel: " + targetVelocity);
+            if (Mathf.Abs(currentThrustForce) > 0)
+            {
+                float rocketAngle = Vector3.Angle(Vector3.up, imuObj.transform.up);
+
+
+                if (rocketAngle < 85)
+                {
+                    currentThrustForce += r_body.mass * Mathf.Abs(Physics.gravity.y); // Take into account gravity.
+                    currentThrustForce /= Mathf.Cos(Mathf.Deg2Rad * rocketAngle);
+                }
+            }
+            
+            // ---------------------------------------------------
+
+            // limit force output
+            if (currentThrustForce > thrustForce)
+            {
+                currentThrustForce = thrustForce;
+            }
 
             // Engine force
-            r_body.AddForceAtPosition(engine.transform.up * ((thrustForce * pid_result_velocity) + (r_body.mass * Mathf.Abs(Physics.gravity.y))), engine.transform.position);
+            r_body.AddForceAtPosition(engine.transform.up * currentThrustForce, engine.transform.position);
             //Debug.DrawRay(engine.transform.position, engine.transform.up * -1 * 2, Color.red);
+
+            // Send telemetry to UI
+            telemetry.currentThrustForce = currentThrustForce;
         }
+
+        telemetry.currentVelocity = r_body.velocity;
+        ui_manager.UpdateTelemetryData(telemetry);
+    }
+
+
+    private float convertAngleRange(float angle)
+    {
+        return angle > 180 ? angle - 360 : angle;
     }
 }
