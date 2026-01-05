@@ -1,5 +1,5 @@
 # Rocket-Simulation
-Simulation of a self-landing rocket.
+A thrust vectoring rocket simulation built with Unity
 <br>
 This is a WIP project.
 <br><br>
